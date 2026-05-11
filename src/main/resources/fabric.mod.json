@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "agelock-icons",
+	"version": "${version}",
+	"name": "AgeLock-Icons",
+	"description": "Shows a custom icon above age-locked mobs within 15 blocks while holding a Golden Dandelion.",
+	"authors": [
+		"Haage"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/project/agelock-icons",
+		"issues": "https://github.com/Haage001/AgeLock-Icons/issues",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/agelock-icons/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"haage.agelockicons.AgeLockIcons"
+		],
+		"client": [
+			"haage.agelockicons.client.AgeLockIconsClient"
+		]
+	},
+	"mixins": [
+		"agelock-icons.mixins.json",
+		{
+			"config": "agelock-icons.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~26.1",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
