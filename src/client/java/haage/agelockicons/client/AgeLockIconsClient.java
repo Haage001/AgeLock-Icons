@@ -1,13 +1,12 @@
 package haage.agelockicons.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,12 +40,12 @@ public class AgeLockIconsClient implements ClientModInitializer {
 		}
 
 		PoseStack poseStack = context.poseStack();
-		MultiBufferSource.BufferSource bufferSource = context.bufferSource();
-		if (poseStack == null || bufferSource == null) {
+		SubmitNodeCollector collector = context.submitNodeCollector();
+		if (poseStack == null || collector == null) {
 			return;
 		}
 
-		Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().position();
+		Vec3 cameraPos = minecraft.gameRenderer.mainCamera().position();
 		double maxDistanceSqr = SEARCH_RADIUS_BLOCKS * SEARCH_RADIUS_BLOCKS;
 
 		for (Entity entity : minecraft.level.entitiesForRendering()) {
@@ -59,7 +58,7 @@ public class AgeLockIconsClient implements ClientModInitializer {
 			}
 
 			if (ageableMob.isAgeLocked()) {
-				renderIconAboveMob(minecraft, poseStack, bufferSource, cameraPos, ageableMob, 0.85D);
+				renderIconAboveMob(minecraft, poseStack, collector, cameraPos, ageableMob, 0.85D);
 			}
 		}
 	}
@@ -71,7 +70,7 @@ public class AgeLockIconsClient implements ClientModInitializer {
 	private static void renderIconAboveMob(
 			Minecraft minecraft,
 			PoseStack poseStack,
-			MultiBufferSource bufferSource,
+			SubmitNodeCollector collector,
 			Vec3 cameraPos,
 			AgeableMob mob,
 			double yOffset
@@ -82,29 +81,28 @@ public class AgeLockIconsClient implements ClientModInitializer {
 
 		poseStack.pushPose();
 		poseStack.translate(x, y, z);
-		poseStack.mulPose(minecraft.gameRenderer.getMainCamera().rotation());
+		poseStack.mulPose(minecraft.gameRenderer.mainCamera().rotation());
 		poseStack.scale(0.025F, -0.025F, 0.025F);
 
-		VertexConsumer consumer = bufferSource.getBuffer(RenderTypes.entityTranslucentEmissive(ICON_TEXTURE));
-		PoseStack.Pose lastPose = poseStack.last();
 		float s = 8.0F;
-
-		consumer.addVertex(lastPose, -s, -s, 0f)
-				.setColor(255, 255, 255, 255).setUv(0f, 0f)
-				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
-				.setNormal(0f, 1f, 0f);
-		consumer.addVertex(lastPose, s, -s, 0f)
-				.setColor(255, 255, 255, 255).setUv(1f, 0f)
-				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
-				.setNormal(0f, 1f, 0f);
-		consumer.addVertex(lastPose, s, s, 0f)
-				.setColor(255, 255, 255, 255).setUv(1f, 1f)
-				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
-				.setNormal(0f, 1f, 0f);
-		consumer.addVertex(lastPose, -s, s, 0f)
-				.setColor(255, 255, 255, 255).setUv(0f, 1f)
-				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
-				.setNormal(0f, 1f, 0f);
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(ICON_TEXTURE), (pose, consumer) -> {
+			consumer.addVertex(pose, -s, -s, 0f)
+					.setColor(255, 255, 255, 255).setUv(0f, 0f)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
+					.setNormal(0f, 1f, 0f);
+			consumer.addVertex(pose, s, -s, 0f)
+					.setColor(255, 255, 255, 255).setUv(1f, 0f)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
+					.setNormal(0f, 1f, 0f);
+			consumer.addVertex(pose, s, s, 0f)
+					.setColor(255, 255, 255, 255).setUv(1f, 1f)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
+					.setNormal(0f, 1f, 0f);
+			consumer.addVertex(pose, -s, s, 0f)
+					.setColor(255, 255, 255, 255).setUv(0f, 1f)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT_LIGHT)
+					.setNormal(0f, 1f, 0f);
+		});
 
 		poseStack.popPose();
 	}
